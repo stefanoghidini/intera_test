@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+<rosparam command="load"  file="$(find intera_test_suite)/config/example.yaml"/>
+
+  <node pkg="intera_test_suite" type="position_sine_wave" name="position_sine_wave" output="screen">
+  <remap from="joint_states" to="robot/joint_states" />
+  <remap from="joint_command" to="/robot/limb/right/joint_command" />
+  </node>
+
+</launch>
