@@ -5,20 +5,29 @@
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "node");
+  ros::init(argc, argv, "node_test");
   ros::NodeHandle nh;
 
-  ros_helper::SubscriptionNotifier<sensor_msgs::JointState> js_sub(nh,"joint_states",1);
+  ros::spinOnce();
+
+  std::shared_ptr<ros_helper::SubscriptionNotifier<sensor_msgs::JointState>> js_sub;
+  js_sub.reset(new ros_helper::SubscriptionNotifier<sensor_msgs::JointState>(nh,"joint_states", 1));
+
+
+//  ros_helper::SubscriptionNotifier<sensor_msgs::JointState> js_sub(nh,"/robot/joint_states",1);
   ros::Publisher intera_cmd_pub=nh.advertise<intera_core_msgs::JointCommand>("joint_command",1);
   ros::Publisher js_cmd_pub=nh.advertise<sensor_msgs::JointState>("joint_target",1);
 
   ROS_INFO("waiting joint states...");
-  if (!js_sub.waitForANewData(ros::Duration(10)))
+
+  if (!js_sub-> waitForANewData(ros::Duration(10)))
   {
     ROS_ERROR("No joint states messages...");
     return 0;
   }
-  sensor_msgs::JointState msg=js_sub.getData();
+
+  sensor_msgs::JointState msg=js_sub->getData();
+  ros::Duration delta_time=msg.header.stamp-ros::Time::now();
   unsigned int ndof=msg.name.size();
   ROS_INFO("received a joint states with %u joints:",ndof);
 
@@ -98,7 +107,7 @@ int main(int argc, char **argv)
   double t=0;
   while (ros::ok() && t<=test_time)
   {
-    sensor_msgs::JointState fb=js_sub.getData();
+    sensor_msgs::JointState fb=js_sub->getData();
     t=(ros::WallTime::now()-t0).toSec();
     double pos=pos0+0.5*amplitude*(1-std::cos(omega*t));
     double vel=0.5*amplitude*omega*sin(omega*t);
@@ -111,7 +120,7 @@ int main(int argc, char **argv)
     cmd.acceleration.at(joint_idx)=acc;
 
 //    cmd.velocity.at(joint_idx)=vel;
-    msg.header.stamp=cmd.header.stamp=fb.header.stamp;
+    msg.header.stamp=cmd.header.stamp=ros::Time::now()+delta_time;//fb.header.stamp;
     intera_cmd_pub.publish(cmd);
     js_cmd_pub.publish(msg);
     lp.sleep();

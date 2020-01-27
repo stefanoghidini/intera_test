@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
 <launch>
-<rosparam command="load"  file="$(find intera_test_suite)/config/example.yaml"/>
+  <arg name="test_name" default="a"/>
+  <param name="/binary_logger/test_name" value="$(arg test_name)"/>
+
+  <rosparam command="load"  file="$(find intera_test_suite)/config/example.yaml"/>
 
   <node pkg="intera_test_suite" type="position_sine_wave" name="position_sine_wave" output="screen">
   <remap from="joint_states" to="robot/joint_states" />
