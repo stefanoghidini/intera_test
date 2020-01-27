@@ -1,2 +1,2 @@
 # intera_test
-A set of packages to test Rethink Robotics robots performance
+A set of packages for testing Rethink Robotics robots performance
